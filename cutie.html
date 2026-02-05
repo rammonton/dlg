@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>For You ❤️</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: #ffe6f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .container {
+      text-align: center;
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      max-width: 90%;
+    }
+
+    h1 {
+      color: #ff4d88;
+    }
+
+    img {
+      width: 220px;
+      max-width: 80vw;
+      margin: 20px 0;
+      border-radius: 15px;
+    }
+
+    button {
+      font-size: 18px;
+      padding: 12px 28px;
+      margin: 10px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    #yesBtn {
+      background-color: #ff4d88;
+      color: white;
+    }
+
+    #noBtn {
+      background-color: #ccc;
+      position: relative;
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      20% { transform: translateX(-5px); }
+      40% { transform: translateX(5px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+      100% { transform: translateX(0); }
+    }
+
+    .shake {
+      animation: shake 0.3s;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1 id="question">Do you love me? 🥺</h1>
+  <img id="gif" src="https://media.giphy.com/media/3ohhwF34cGDoFFhRfy/giphy.gif" />
+  <div>
+    <button id="yesBtn">Yes 💖</button>
+    <button id="noBtn">No 😢</button>
+  </div>
+</div>
+
+<script>
+  const question = document.getElementById("question");
+  const gif = document.getElementById("gif");
+  const noBtn = document.getElementById("noBtn");
+  const yesBtn = document.getElementById("yesBtn");
+
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  const sadGifs = [
+    "https://media.giphy.com/media/l3vR85PnGsBwu1PFK/giphy.gif",
+    "https://media.giphy.com/media/OPU6wzx8JrHna/giphy.gif",
+    "https://media.giphy.com/media/9Y5BbDSkSTiY8/giphy.gif"
+  ];
+
+  const happyGifs = [
+    "https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif",
+    "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
+    "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif"
+  ];
+
+  const state = {
+    noCount: 0,
+    phase: "ask",
+    yesScale: 1
+  };
+
+  function random(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function render() {
+    if (state.phase === "ask") {
+      question.textContent = "Do you love me? 🥺";
+    }
+
+    if (state.phase === "sad") {
+      question.textContent = "Why not? 😭";
+      gif.src = random(sadGifs);
+    }
+
+    if (state.phase === "dodge") {
+      question.textContent = "You sure about that? 😈";
+    }
+
+    if (state.phase === "happy") {
+      question.textContent = "YAY!!! Let’s get married 💍💖";
+      gif.src = random(happyGifs);
+      noBtn.style.display = "none";
+      yesBtn.style.display = "none";
+    }
+  }
+
+  function teleportNoButton() {
+    const maxX = window.innerWidth - noBtn.offsetWidth - 20;
+    const maxY = window.innerHeight - noBtn.offsetHeight - 20;
+
+    const x = Math.random() * maxX;
+    const y = Math.random() * maxY;
+
+    noBtn.style.position = "absolute";
+    noBtn.style.left = `${x}px`;
+    noBtn.style.top = `${y}px`;
+  }
+
+  noBtn.addEventListener("click", () => {
+    state.noCount++;
+
+    noBtn.classList.remove("shake");
+    void noBtn.offsetWidth;
+    noBtn.classList.add("shake");
+
+    state.yesScale += 0.15;
+    yesBtn.style.transform = `scale(${state.yesScale})`;
+
+    if (state.noCount >= 5) {
+      const wasDodging = state.phase === "dodge";
+      state.phase = "dodge";
+      if (!wasDodging) teleportNoButton();
+    } else {
+      state.phase = "sad";
+    }
+
+    render();
+  });
+
+  // Desktop hover dodge
+  if (!isMobile) {
+    noBtn.addEventListener("mouseenter", () => {
+      if (state.phase === "dodge") teleportNoButton();
+    });
+  }
+
+  // Mobile touch dodge
+  if (isMobile) {
+    noBtn.addEventListener("touchstart", (e) => {
+      if (state.phase === "dodge") {
+        e.preventDefault();
+        teleportNoButton();
+      }
+    });
+  }
+
+  yesBtn.addEventListener("click", () => {
+    state.phase = "happy";
+    render();
+  });
+
+  render();
+</script>
+
+</body>
+</html>
