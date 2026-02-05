@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>For You ❤️</title>
+  <title>For Lyn ❤️</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -17,7 +17,7 @@
       overflow: hidden;
     }
 
-    .container {
+    .container, .questionnaire {
       text-align: center;
       background: white;
       padding: 30px;
@@ -58,6 +58,19 @@
       position: relative;
     }
 
+    input {
+      font-size: 16px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 2px solid #ccc;
+      margin-top: 10px;
+      outline: none;
+    }
+
+    .shake {
+      animation: shake 0.3s;
+    }
+
     @keyframes shake {
       0% { transform: translateX(0); }
       20% { transform: translateX(-5px); }
@@ -67,15 +80,38 @@
       100% { transform: translateX(0); }
     }
 
-    .shake {
-      animation: shake 0.3s;
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ff4d88;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .toast.show {
+      opacity: 1;
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
+<!-- Questionnaire first -->
+<div class="questionnaire">
+  <h1>When did we officially started dating? 📅</h1>
+  <input type="text" id="answerInput" placeholder="MM/DD/YYYY" />
+  <div>
+    <button id="submitAnswer">Submit</button>
+  </div>
+</div>
+
+<!-- Main love container -->
+<div class="container" style="display:none;">
   <h1 id="question">Do you love me? 🥺</h1>
   <img id="gif" src="https://media.giphy.com/media/3ohhwF34cGDoFFhRfy/giphy.gif" />
   <div>
@@ -84,7 +120,39 @@
   </div>
 </div>
 
+<!-- Toast -->
+<div class="toast" id="toast">Wrong answer! 😢 Try again.</div>
+
 <script>
+  const questionnaire = document.querySelector(".questionnaire");
+  const container = document.querySelector(".container");
+  const answerInput = document.getElementById("answerInput");
+  const submitAnswer = document.getElementById("submitAnswer");
+  const toast = document.getElementById("toast");
+
+  const correctAnswer = "01/01/2026";
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2000);
+  }
+
+  submitAnswer.addEventListener("click", () => {
+    const val = answerInput.value.trim();
+    if (val === correctAnswer) {
+      questionnaire.style.display = "none";
+      container.style.display = "block";
+      render(); // render the love page after correct answer
+    } else {
+      answerInput.classList.remove("shake");
+      void answerInput.offsetWidth; // trigger reflow
+      answerInput.classList.add("shake");
+      showToast("Wrong answer! 😢 Try again.");
+    }
+  });
+
+  // ---------- Love page script ----------
   const question = document.getElementById("question");
   const gif = document.getElementById("gif");
   const noBtn = document.getElementById("noBtn");
@@ -118,16 +186,13 @@
     if (state.phase === "ask") {
       question.textContent = "Do you love me? 🥺";
     }
-
     if (state.phase === "sad") {
       question.textContent = "Why not? 😭";
       gif.src = random(sadGifs);
     }
-
     if (state.phase === "dodge") {
       question.textContent = "You sure about that? 😈";
     }
-
     if (state.phase === "happy") {
       question.textContent = "YAY!!! Let’s get married 💍💖";
       gif.src = random(happyGifs);
@@ -139,10 +204,8 @@
   function teleportNoButton() {
     const maxX = window.innerWidth - noBtn.offsetWidth - 20;
     const maxY = window.innerHeight - noBtn.offsetHeight - 20;
-
     const x = Math.random() * maxX;
     const y = Math.random() * maxY;
-
     noBtn.style.position = "absolute";
     noBtn.style.left = `${x}px`;
     noBtn.style.top = `${y}px`;
@@ -150,14 +213,11 @@
 
   noBtn.addEventListener("click", () => {
     state.noCount++;
-
     noBtn.classList.remove("shake");
     void noBtn.offsetWidth;
     noBtn.classList.add("shake");
-
     state.yesScale += 0.15;
     yesBtn.style.transform = `scale(${state.yesScale})`;
-
     if (state.noCount >= 5) {
       const wasDodging = state.phase === "dodge";
       state.phase = "dodge";
@@ -165,18 +225,15 @@
     } else {
       state.phase = "sad";
     }
-
     render();
   });
 
-  // Desktop hover dodge
   if (!isMobile) {
     noBtn.addEventListener("mouseenter", () => {
       if (state.phase === "dodge") teleportNoButton();
     });
   }
 
-  // Mobile touch dodge
   if (isMobile) {
     noBtn.addEventListener("touchstart", (e) => {
       if (state.phase === "dodge") {
@@ -190,8 +247,6 @@
     state.phase = "happy";
     render();
   });
-
-  render();
 </script>
 
 </body>
